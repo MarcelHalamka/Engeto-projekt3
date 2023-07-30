@@ -35,10 +35,23 @@ def get_soup(url: str) -> BeautifulSoup:
     soup = BeautifulSoup(odpoved_serveru.text, "html.parser")
     return soup
 
+def get_names()-> list:
+    """
+    Tahhle funkce scrapuje politické strany které potřebuji
+    dát do hlavičky
+    """
+    hlavicka = ["Kód obce", "Název obce", "Voliči v seznamu", "Vydané obálky", "Platné hlasy"]
+    url_names = "https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=10&xnumnuts=6105"
+    requests_names = requests.get(url_names)
+    soup_names = BeautifulSoup(requests_names.text, "html.parser")
+    volebni_strany = soup_names.find_all(class_ = "overflow_name")
+    for strana in volebni_strany:
+        hlavicka.append(strana.getText())
+    return hlavicka
+
 def main_data(soup: BeautifulSoup) -> list:
     """
-    Tato obrovská funkce vyhledá a scrapuje data z mé url stránky.Hlavičku
-    jsem psal ručně, ale pokud by byla delší, vyscrapoval bych ji.Poté se ukládá
+    Tato funkce vyhledá a scrapuje data z mé url stránky.Poté se ukládá
     každý element do listu my_list který až se na konci každého cyklu naplní, provede se
     pomocí .append uložení do main_listu a list se vyprázdní aby se mohl v dalším
     cyklu opět znovu plnit. A main_list se nakonec použije na převod do CSV
@@ -48,17 +61,7 @@ def main_data(soup: BeautifulSoup) -> list:
     okrsky = soup.find_all(class_="overflow_name")
     links = soup.find_all("a")
     cislo = 0
-
-    hlavicka = ["Kód obce", "Název obce", "Voliči v seznamu", "Vydané obálky", "Platné hlasy", "Občanská demokratická strana",
-                "Řád národa - Vlastenecká unie", "CESTA ODPOVĚDNÉ SPOLEČNOSTI", "Česká str.sociálně demokrat.", "Radostné Česko",
-                "STAROSTOVÉ A NEZÁVISLÍ", "Komunistická str.Čech a Moravy", "Strana zelených",
-                "ROZUMNÍ-stop migraci,diktát.EU", "Strana svobodných občanů",
-                "Blok proti islam.-Obran.domova", "Občanská demokratická aliance", "Česká pirátská strana",
-                "Referendum o Evropské unii",
-                "TOP 09", "ANO 2011", "SPR-Republ.str.Čsl. M.Sládka", "Křesť.demokr.unie-Čs.str.lid.",
-                "Česká strana národně sociální",
-                "REALISTÉ", "SPORTOVCI", "Dělnic.str.sociální spravedl.", "Svob.a př.dem.-T.Okamura (SPD)",
-                "Strana Práv Občanů"]
+    hlavicka = get_names()
     main_list = [hlavicka]
     for link in links[5:-2:2]:
         my_list = []
@@ -90,10 +93,11 @@ def main_data(soup: BeautifulSoup) -> list:
 def save_to_csv(data: list, csv_file: str) ->str:
     """
     Tato funkce ukládá data do tabulky csv souboru kdy díky delimiter(",")
-    se odděluje vše čárkou
+    se odděluje vše čárkou a QUOTE_MINIMAL zajistím, že když v textu bude čárka,
+    neoddělí se
     """
     with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file, delimiter=",")
+        writer = csv.writer(file, delimiter=";")
         writer.writerow(data[0])
         for row in data[1:]:
             writer.writerow(row)
