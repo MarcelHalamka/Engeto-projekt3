@@ -93,8 +93,7 @@ def main_data(soup: BeautifulSoup) -> list:
 def save_to_csv(data: list, csv_file: str) ->str:
     """
     Tato funkce ukládá data do tabulky csv souboru kdy díky delimiter(",")
-    se odděluje vše čárkou a QUOTE_MINIMAL zajistím, že když v textu bude čárka,
-    neoddělí se
+    se odděluje vše středníkem.
     """
     with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter=";")
