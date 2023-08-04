@@ -40,8 +40,8 @@ def get_valid_url_and_csv() -> tuple:
     url = sys.argv[1]
     csv_file = sys.argv[2]
     if url not in final_adress or not csv_file.endswith(".csv"):
-        print("Zadané špatné argumenty, nebo špatné pořadí. První musí být vámi zvolená url adresa a\
-              druhý název souboru končící .csv!")
+        print("Zadané špatné argumenty, nebo špatné pořadí. První musí být vámi zvolená url adresa \
+              ze které lze scrapovat volba a druhý název souboru končící .csv!")
         sys.exit(1)
     return url, csv_file
 
