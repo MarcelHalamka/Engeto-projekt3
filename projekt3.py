@@ -12,7 +12,10 @@ import sys
 def get_available_adress()->list:
     """
     Funkce vyscrapuje všechny url adresy, které je možné použít
-    na scrapování dat
+    na scrapování dat.Slicing jsem použil abych získal každou druhou
+    adresu, protože element "a" mi vždy vyscrapoval dvě v každém řádku
+    a já potřeboval vždy tu druhou.
+
     """
     main_odpoved_serveru = requests.get("https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ")
     main_soup = BeautifulSoup(main_odpoved_serveru.text, "html.parser")
