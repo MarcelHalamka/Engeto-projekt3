@@ -9,22 +9,41 @@ from bs4 import BeautifulSoup
 import csv
 import sys
 
-def get_valid_url_and_csv() -> str:
+def get_available_adress()->list:
+    """
+    Funkce vyscrapuje všechny url adresy, které je možné použít
+    na scrapování dat
+    """
+    main_odpoved_serveru = requests.get("https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ")
+    main_soup = BeautifulSoup(main_odpoved_serveru.text, "html.parser")
+    my_address = main_soup.find_all(class_='center')
+
+    available_adress = []
+    for address in my_address:
+        my_links = address.find_all('a')
+        for link in my_links:
+            href = link.get('href')
+            available_adress.append("https://volby.cz/pls/ps2017nss/" + href)
+        final_adress = available_adress[1::2]
+    return final_adress
+
+def get_valid_url_and_csv() -> tuple:
     """
     Tato funkce zkontroluje zda-li byly zadány správné argumenty
     pro spuštění kodu a pokud ano tak vrací url se kterým budu
     dále pracovat
     """
+    final_adress = get_available_adress()
     if len(sys.argv) != 3:
         print("Zadejte prosím dva argumenty")
         sys.exit(1)
     url = sys.argv[1]
     csv_file = sys.argv[2]
-    if url != "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=10&xnumnuts=6105" or csv_file != "vysledky_volby.csv":
-        print("Zadali jste neplatné argumenty. Správná URL je: 'https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=10&xnumnuts=6105' a správný \
-              název CSV souboru je: 'vysledky_volby.csv'.")
+    if url not in final_adress or not csv_file.endswith(".csv"):
+        print("Zadané špatné argumenty, nebo špatné pořadí. První musí být vámi zvolená url adresa a\
+              druhý název souboru končící .csv!")
         sys.exit(1)
-    return url
+    return url, csv_file
 
 def get_soup(url: str) -> BeautifulSoup:
     """
@@ -106,10 +125,9 @@ def main():
     """
     Hlavní funkce která spouští postupně všechny funkce výše uvedené
     """
-    url = get_valid_url_and_csv()
+    url, csv_file = get_valid_url_and_csv()
     soup = get_soup(url)
     data = main_data(soup)
-    csv_file = "vysledky_volby.csv"
     save_to_csv(data, csv_file)
 
 if __name__ == "__main__":
